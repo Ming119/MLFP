@@ -3,7 +3,8 @@ import json
 import numpy as np
 
 def _time2int(time: str) -> int:
-  return int(time[:2]) * 60 + int(time[2:])
+  t = time.split(':')
+  return int(t[0]) * 60 + int(t[1])
 
 def _read_json(path: str, step_minute: int = 1) -> list:
   with open(path, 'r') as f:
@@ -28,3 +29,8 @@ def read_data(head_folder: str, step_minute: int = 1):
     data = np.append(data, stationData)
   data = np.reshape(data, (-1, 112))
   return data, total_stops
+
+def create_folds(data, k: int = 5):
+  fold_size = int(len(data) / k)
+  folds = [data[i:i+fold_size] for i in range(0, len(data), fold_size)]
+  return folds
