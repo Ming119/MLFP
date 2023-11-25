@@ -4,3 +4,4 @@ models
 lstm*
 LSTM*
 *.png
+__pycache__
