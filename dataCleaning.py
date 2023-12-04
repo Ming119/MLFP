@@ -3,8 +3,8 @@ import requests
 import datetime
 import os
 
-dateURL = "https://github.com/hyusterr/html.2023.final.data/tree/release/release/_date_"
-rawURL: str = "https://raw.githubusercontent.com/hyusterr/html.2023.final.data/release"
+dateURL: str = "https://github.com/hyusterr/html.2023.final.data/tree/release/release/_date_"
+rawURL:  str = "https://raw.githubusercontent.com/hyusterr/html.2023.final.data/release"
 snoURL:  str = f"{rawURL}/sno_test_set.txt"
 dataURL: str = f"{rawURL}/release/_date_/_sno_.json"
 
@@ -37,10 +37,27 @@ for d in date:
 # validate
 for date in os.listdir("./data"):
 	for sno in os.listdir(f"./data/{date}"):
-		with open(f"./data/{date}/{sno}", "r") as f:
-			data = json.load(f)
-			for i in range(1440):
-				h = str(i // 60).zfill(2)
-				m = str(i % 60).zfill(2)
-				if data[f"{h}:{m}"] == {}:
-					print(f"Missing data in {date}/{sno} at {h}:{m}")
+		currentFile = open(f"./data/{date}/{sno}", "r")
+		data = json.load(currentFile)
+		currentFile.close()
+
+		change = False
+
+		for i in range(1440):
+			h = str(i // 60).zfill(2)
+			m = str(i % 60).zfill(2)
+			if data[f"{h}:{m}"] != {}: continue
+
+			next_day = datetime.date(int(date[:4]), int(date[4:6]), int(date[6:])) + datetime.timedelta(days=1)
+			next_day = next_day.strftime("%Y%m%d")
+			if os.path.exists(f"./data/{next_day}/{sno}"):
+				with open(f"./data/{next_day}/{sno}", "r") as f:
+					data[f"{h}:{m}"] = json.load(f)["00:00"]
+					change = True
+				
+			else: print(f"Missing {date}/{sno} {h}:{m}")
+
+		if change:
+			with open(f"./data/{date}/{sno}", "w") as f:
+				json.dump(data, f, indent=2)
+				print(f"Saved {date}/{sno}")
